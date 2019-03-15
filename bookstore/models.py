@@ -45,6 +45,7 @@ class CustomerCheckoutHistory(CommonInfo):
 class BookCheckoutHistory(CommonInfo):
     check_out_history = models.ForeignKey(CustomerCheckoutHistory, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    date_returned = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "book checkout history"
