@@ -34,7 +34,6 @@ class Book(DescriptionCommonInfo):
 class CustomerCheckoutHistory(CommonInfo):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     check_out_date = models.DateField()
-    latest_charge = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "check out history"
