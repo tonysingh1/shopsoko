@@ -34,6 +34,7 @@ class Book(DescriptionCommonInfo):
 class CustomerCheckoutHistory(CommonInfo):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     check_out_date = models.DateField()
+    latest_charge = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "check out history"
@@ -55,3 +56,24 @@ class BookCheckoutHistory(CommonInfo):
 
     def __str__(self):
         return '%s, %s' % (self.check_out_history.id, self.book)
+
+    def get_days(self):
+        days = 0
+        check_out_date = self.check_out_history.check_out_date
+        date_returned = self.date_returned
+        if date_returned:
+            delta = date_returned - check_out_date
+            days = delta.days
+        return days
+
+    def get_book_charge(self):
+        rate_per_day = self.book_rate
+        days = self.get_days()
+        book_charge = days * rate_per_day
+        return book_charge
+
+    def save(self,  *args, **kwargs):
+        if self.id:  # calculate charge and day when updating fields
+            self.book_charge = self.get_book_charge()
+            self.days_rented = self.get_days()
+        super().save(*args, **kwargs)
