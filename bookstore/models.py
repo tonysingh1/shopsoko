@@ -45,7 +45,7 @@ class CustomerCheckoutHistory(CommonInfo):
 class BookCheckoutHistory(CommonInfo):
     check_out_history = models.ForeignKey(CustomerCheckoutHistory, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
-    date_returned = models.DateTimeField(null=True, blank=True)
+    date_returned = models.DateField(null=True, blank=True)
     book_rate = models.DecimalField(default=1, max_digits=5, decimal_places=2)
     days_rented = models.IntegerField(null=True, blank=True)
     book_charge = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
