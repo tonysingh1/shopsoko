@@ -2,6 +2,7 @@ from django.db import models
 
 # Create your models here.
 from django.db import models
+from django.db.models.aggregates import Sum
 
 
 class CommonInfo(models.Model):
@@ -40,6 +41,12 @@ class CustomerCheckoutHistory(CommonInfo):
 
     def __str__(self):
         return '%s, %s' % (self.id, self.customer)
+
+    def get_latest_charge(self):
+        last = self.datereturnedcost_set.last()
+        total = BookCheckoutHistory.objects.filter(date_return_cost=last).aggregate(amount=Sum('book_charge'))
+        total = total.get('amount', 0)
+        return total
 
 
 class DateReturnedCost(CommonInfo):  # Get the exact charge when books are returned
