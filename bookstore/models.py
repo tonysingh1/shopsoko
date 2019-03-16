@@ -42,6 +42,10 @@ class CustomerCheckoutHistory(CommonInfo):
         return '%s, %s' % (self.id, self.customer)
 
 
+class DateReturnedCost(CommonInfo):  # Get the exact charge when books are returned
+    check_out_history = models.ForeignKey(CustomerCheckoutHistory, on_delete=models.CASCADE)
+
+
 class BookCheckoutHistory(CommonInfo):
     check_out_history = models.ForeignKey(CustomerCheckoutHistory, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
@@ -49,6 +53,7 @@ class BookCheckoutHistory(CommonInfo):
     book_rate = models.DecimalField(default=1, max_digits=5, decimal_places=2)
     days_rented = models.IntegerField(null=True, blank=True)
     book_charge = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    date_return_cost = models.ForeignKey(DateReturnedCost, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         verbose_name_plural = "book checkout history"
