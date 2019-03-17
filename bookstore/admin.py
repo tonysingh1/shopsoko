@@ -46,8 +46,9 @@ class CustomerCheckoutHistoryAdmin(admin.ModelAdmin):
                     # create date returned cost object
                     date_returned_object = DateReturnedCost.objects.create(check_out_history=check_out_history)
                     instance.date_return_cost = date_returned_object
+                    create_date_returned = True
                 else:
-                    instance.date_return_cost.id = date_returned_object
+                    instance.date_return_cost = date_returned_object
             instance.save()
         formset.save_m2m()
 
