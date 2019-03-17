@@ -35,6 +35,9 @@ class BookCategory(DescriptionCommonInfo):
 class Book(DescriptionCommonInfo):
     book_category = models.ForeignKey(BookCategory, on_delete=models.SET_NULL, null=True)
 
+    def __str__(self):
+        return '%s, %s, %s' % (self.code, self.name, self.book_category.name)
+
 
 class CustomerCheckoutHistory(CommonInfo):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
@@ -81,14 +84,19 @@ class BookCheckoutHistory(CommonInfo):
             days = delta.days
         return days
 
+    def get_rate_per_day(self):
+        rate_per_day = self.book.book_category.charge_per_day
+        return rate_per_day
+
     def get_book_charge(self):
-        rate_per_day = self.book_rate
+        rate_per_day = self.get_rate_per_day()
         days = self.get_days()
         book_charge = days * rate_per_day
         return book_charge
 
     def save(self,  *args, **kwargs):
         if self.id:  # calculate charge and day when updating fields
+            self.book_rate = self.get_rate_per_day()
             self.book_charge = self.get_book_charge()
             self.days_rented = self.get_days()
         super().save(*args, **kwargs)
