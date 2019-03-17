@@ -28,8 +28,12 @@ class Customer(DescriptionCommonInfo):
     pass
 
 
+class BookCategory(DescriptionCommonInfo):
+    charge_per_day = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+
+
 class Book(DescriptionCommonInfo):
-    pass
+    book_category = models.ForeignKey(BookCategory, on_delete=models.SET_NULL, null=True)
 
 
 class CustomerCheckoutHistory(CommonInfo):
