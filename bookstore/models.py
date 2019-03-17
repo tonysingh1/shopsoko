@@ -30,6 +30,10 @@ class Customer(DescriptionCommonInfo):
 
 class BookCategory(DescriptionCommonInfo):
     charge_per_day = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    starting_charge = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    starting_charge_day_limit = models.PositiveIntegerField(null=True, blank=True)
+    minimum_charge = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    minimum_charge_day_limit = models.PositiveIntegerField(null=True, blank=True)
 
 
 class Book(DescriptionCommonInfo):
