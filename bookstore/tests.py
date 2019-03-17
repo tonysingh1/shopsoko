@@ -52,7 +52,9 @@ class BookstoreTestCase(TestCase):
         book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 2)
+        self.assertEqual(round(book_charge, 2), decimal.Decimal('2'))
+        book_rate = book_checkout_history.book_rate
+        self.assertEqual(round(book_rate, 2), decimal.Decimal('1'))
 
         book_checkout_history = BookCheckoutHistory.objects.get(id=2)  # Fiction
         checkout_date = book_checkout_history.check_out_history.check_out_date
@@ -60,7 +62,9 @@ class BookstoreTestCase(TestCase):
         book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 6)
+        self.assertEqual(round(book_charge, 2), decimal.Decimal('6'))
+        book_rate = book_checkout_history.book_rate
+        self.assertEqual(round(book_rate,2), decimal.Decimal('3'))
 
         book_checkout_history = BookCheckoutHistory.objects.get(id=3)  # Novel
         checkout_date = book_checkout_history.check_out_history.check_out_date
@@ -68,10 +72,12 @@ class BookstoreTestCase(TestCase):
         book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 4.5)
+        self.assertEqual(round(book_charge,2), decimal.Decimal('4.5'))
+        book_rate = book_checkout_history.book_rate
+        self.assertEqual(round(book_rate, 2), decimal.Decimal('2.25'))
 
         latest_charge = customer_checkout_history.get_latest_charge()
-        self.assertEqual(latest_charge, 12.5)
+        self.assertEqual(round(latest_charge, 2), decimal.Decimal(12.5))
 
         # all books returned after 3 days
         days = 3
@@ -81,7 +87,9 @@ class BookstoreTestCase(TestCase):
         book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 3.5)
+        self.assertEqual(round(book_charge, 2), decimal.Decimal('3.5'))
+        book_rate = book_checkout_history.book_rate
+        self.assertEqual(round(book_rate, 2), decimal.Decimal('1.17'))
 
         book_checkout_history = BookCheckoutHistory.objects.get(id=2)  # Fiction
         checkout_date = book_checkout_history.check_out_history.check_out_date
@@ -89,7 +97,9 @@ class BookstoreTestCase(TestCase):
         book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 9)
+        self.assertEqual(round(book_charge, 2), decimal.Decimal('9'))
+        book_rate = book_checkout_history.book_rate
+        self.assertEqual(round(book_rate, 2), decimal.Decimal('3'))
 
         book_checkout_history = BookCheckoutHistory.objects.get(id=3)  # Novel
         checkout_date = book_checkout_history.check_out_history.check_out_date
@@ -97,10 +107,12 @@ class BookstoreTestCase(TestCase):
         book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 4.5)
+        self.assertEqual(round(book_charge, 2), decimal.Decimal('4.5'))
+        book_rate = book_checkout_history.book_rate
+        self.assertEqual(round(book_rate, 2), decimal.Decimal('1.5'))
 
         latest_charge = customer_checkout_history.get_latest_charge()
-        self.assertEqual(latest_charge, 17.0)
+        self.assertEqual(round(latest_charge, 2), decimal.Decimal(17.0))
 
     def test_individual_book_charge_and_total_charge_different_time_returned(self):
         customer_checkout_history = CustomerCheckoutHistory.objects.get(id=1)
@@ -114,9 +126,9 @@ class BookstoreTestCase(TestCase):
         book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 9.5)
+        self.assertEqual(round(book_charge, 2), decimal.Decimal(9.5))
         latest_charge = customer_checkout_history.get_latest_charge()
-        self.assertEqual(latest_charge, 9.5)
+        self.assertEqual(round(latest_charge,2), decimal.Decimal(9.5))
 
         date_returned_object = DateReturnedCost.objects.create(check_out_history=customer_checkout_history)
         days = 4
@@ -126,9 +138,9 @@ class BookstoreTestCase(TestCase):
         book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 12)
+        self.assertEqual(round(book_charge, 2), decimal.Decimal('12'))
         latest_charge = customer_checkout_history.get_latest_charge()
-        self.assertEqual(latest_charge, 12)
+        self.assertEqual(round(latest_charge,2), decimal.Decimal('12'))
 
         date_returned_object = DateReturnedCost.objects.create(check_out_history=customer_checkout_history)
         book_checkout_history = BookCheckoutHistory.objects.get(id=3)  # Novel
@@ -137,6 +149,6 @@ class BookstoreTestCase(TestCase):
         book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 6)
+        self.assertEqual(round(book_charge, 2), decimal.Decimal('6'))
         latest_charge = customer_checkout_history.get_latest_charge()
-        self.assertEqual(latest_charge, 6)
+        self.assertEqual(round(latest_charge, 2), decimal.Decimal('6'))
