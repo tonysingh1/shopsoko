@@ -35,6 +35,28 @@ class BookCategory(DescriptionCommonInfo):
     minimum_charge = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     minimum_charge_day_limit = models.PositiveIntegerField(null=True, blank=True)
 
+    def _check_starting_charge(self, days):
+        days = days
+        if self.starting_charge_day_limit and self.starting_charge:
+            extra_days = days - self.starting_charge_day_limit
+            initial_charge = self.starting_charge_day_limit * self.starting_charge
+            extra_day_charges = extra_days * self.charge_per_day
+            book_charge = initial_charge + extra_day_charges
+        else:
+            book_charge = days * self.charge_per_day
+        return book_charge
+
+    def _check_minimum_charge(self, book_charge, days):
+        if self.minimum_charge and self.minimum_charge_day_limit:
+            if days < self.minimum_charge_day_limit:
+                book_charge = self.minimum_charge
+        return book_charge
+
+    def get_book_charge(self, days):
+        book_charge = self._check_starting_charge(days)
+        book_charge = self._check_minimum_charge(book_charge=book_charge, days=days)
+        return book_charge
+
 
 class Book(DescriptionCommonInfo):
     book_category = models.ForeignKey(BookCategory, on_delete=models.SET_NULL, null=True)
@@ -89,13 +111,16 @@ class BookCheckoutHistory(CommonInfo):
         return days
 
     def get_rate_per_day(self):
-        rate_per_day = self.book.book_category.charge_per_day
+        rate_per_day = 0
+        days = self.get_days()
+        book_charge = self.book.book_category.get_book_charge(days)
+        if days:
+            rate_per_day = book_charge / days
         return rate_per_day
 
     def get_book_charge(self):
-        rate_per_day = self.get_rate_per_day()
         days = self.get_days()
-        book_charge = days * rate_per_day
+        book_charge = self.book.book_category.get_book_charge(days)
         return book_charge
 
     def save(self,  *args, **kwargs):

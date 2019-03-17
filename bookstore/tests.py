@@ -1,4 +1,5 @@
 import datetime
+import decimal
 
 from datetime import timedelta
 
@@ -38,12 +39,41 @@ class BookstoreTestCase(TestCase):
         BookCheckoutHistory.objects.create(check_out_history=customer_checkout_history, book=book_b)
         BookCheckoutHistory.objects.create(check_out_history=customer_checkout_history, book=book_c)
 
-    def test_individual_book_charge(self):  # used for checking if books were returned on different dates
+    def test_individual_book_charge_and_total_charge_same_time_returned(self):
 
         customer_checkout_history = CustomerCheckoutHistory.objects.get(id=1)
-
-        # two books returned after 3 days
+        # all books returned after 2 days
         date_returned_object = DateReturnedCost.objects.create(check_out_history=customer_checkout_history)
+        days = 2
+
+        book_checkout_history = BookCheckoutHistory.objects.get(id=1)  # Regular
+        checkout_date = book_checkout_history.check_out_history.check_out_date
+        book_checkout_history.date_returned = checkout_date + timedelta(days=days)
+        book_checkout_history.date_return_cost = date_returned_object
+        book_checkout_history.save()
+        book_charge = book_checkout_history.book_charge
+        self.assertEqual(book_charge, 2)
+
+        book_checkout_history = BookCheckoutHistory.objects.get(id=2)  # Fiction
+        checkout_date = book_checkout_history.check_out_history.check_out_date
+        book_checkout_history.date_returned = checkout_date + timedelta(days=days)
+        book_checkout_history.date_return_cost = date_returned_object
+        book_checkout_history.save()
+        book_charge = book_checkout_history.book_charge
+        self.assertEqual(book_charge, 6)
+
+        book_checkout_history = BookCheckoutHistory.objects.get(id=3)  # Novel
+        checkout_date = book_checkout_history.check_out_history.check_out_date
+        book_checkout_history.date_returned = checkout_date + timedelta(days=days)
+        book_checkout_history.date_return_cost = date_returned_object
+        book_checkout_history.save()
+        book_charge = book_checkout_history.book_charge
+        self.assertEqual(book_charge, 4.5)
+
+        latest_charge = customer_checkout_history.get_latest_charge()
+        self.assertEqual(latest_charge, 12.5)
+
+        # all books returned after 3 days
         days = 3
         book_checkout_history = BookCheckoutHistory.objects.get(id=1)  # Regular
         checkout_date = book_checkout_history.check_out_history.check_out_date
@@ -51,7 +81,7 @@ class BookstoreTestCase(TestCase):
         book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 4.5)
+        self.assertEqual(book_charge, 3.5)
 
         book_checkout_history = BookCheckoutHistory.objects.get(id=2)  # Fiction
         checkout_date = book_checkout_history.check_out_history.check_out_date
@@ -61,21 +91,52 @@ class BookstoreTestCase(TestCase):
         book_charge = book_checkout_history.book_charge
         self.assertEqual(book_charge, 9)
 
-        latest_charge = customer_checkout_history.get_latest_charge()
-        self.assertEqual(latest_charge, 13.5)
-
-        # one book returned after 7 days
-        date_returned_object = DateReturnedCost.objects.create(check_out_history=customer_checkout_history)
-        days = 7
         book_checkout_history = BookCheckoutHistory.objects.get(id=3)  # Novel
         checkout_date = book_checkout_history.check_out_history.check_out_date
         book_checkout_history.date_returned = checkout_date + timedelta(days=days)
         book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 10.5)
+        self.assertEqual(book_charge, 4.5)
 
         latest_charge = customer_checkout_history.get_latest_charge()
-        self.assertEqual(latest_charge, 10.5)
+        self.assertEqual(latest_charge, 17.0)
 
+    def test_individual_book_charge_and_total_charge_different_time_returned(self):
+        customer_checkout_history = CustomerCheckoutHistory.objects.get(id=1)
 
+        # all books returned after different days
+        date_returned_object = DateReturnedCost.objects.create(check_out_history=customer_checkout_history)
+        days = 7
+        book_checkout_history = BookCheckoutHistory.objects.get(id=1)  # Regular
+        checkout_date = book_checkout_history.check_out_history.check_out_date
+        book_checkout_history.date_returned = checkout_date + timedelta(days=days)
+        book_checkout_history.date_return_cost = date_returned_object
+        book_checkout_history.save()
+        book_charge = book_checkout_history.book_charge
+        self.assertEqual(book_charge, 9.5)
+        latest_charge = customer_checkout_history.get_latest_charge()
+        self.assertEqual(latest_charge, 9.5)
+
+        date_returned_object = DateReturnedCost.objects.create(check_out_history=customer_checkout_history)
+        days = 4
+        book_checkout_history = BookCheckoutHistory.objects.get(id=2)  # Fiction
+        checkout_date = book_checkout_history.check_out_history.check_out_date
+        book_checkout_history.date_returned = checkout_date + timedelta(days=days)
+        book_checkout_history.date_return_cost = date_returned_object
+        book_checkout_history.save()
+        book_charge = book_checkout_history.book_charge
+        self.assertEqual(book_charge, 12)
+        latest_charge = customer_checkout_history.get_latest_charge()
+        self.assertEqual(latest_charge, 12)
+
+        date_returned_object = DateReturnedCost.objects.create(check_out_history=customer_checkout_history)
+        book_checkout_history = BookCheckoutHistory.objects.get(id=3)  # Novel
+        checkout_date = book_checkout_history.check_out_history.check_out_date
+        book_checkout_history.date_returned = checkout_date + timedelta(days=days)
+        book_checkout_history.date_return_cost = date_returned_object
+        book_checkout_history.save()
+        book_charge = book_checkout_history.book_charge
+        self.assertEqual(book_charge, 6)
+        latest_charge = customer_checkout_history.get_latest_charge()
+        self.assertEqual(latest_charge, 6)
