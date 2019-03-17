@@ -5,7 +5,7 @@ from datetime import timedelta
 from django.test import TestCase
 
 # Create your tests here.
-from .models import Customer, Book, CustomerCheckoutHistory, BookCheckoutHistory
+from .models import Customer, Book, CustomerCheckoutHistory, BookCheckoutHistory, DateReturnedCost
 
 
 class BookstoreTestCase(TestCase):
@@ -32,65 +32,39 @@ class BookstoreTestCase(TestCase):
 
     def test_individual_book_charge(self):  # used for checking if books were returned on different dates
 
-        # book 1 returned after 3 days
+        customer_checkout_history = CustomerCheckoutHistory.objects.get(id=1)
+
+        # two books returned after 3 days
+        date_returned_object = DateReturnedCost.objects.create(check_out_history=customer_checkout_history)
         days = 3
         book_checkout_history = BookCheckoutHistory.objects.get(id=1)
         checkout_date = book_checkout_history.check_out_history.check_out_date
         book_checkout_history.date_returned = checkout_date + timedelta(days=days)
+        book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
         self.assertEqual(book_charge, 3.00)
-        final_charge = book_charge
-        self.assertEqual(final_charge, 3)
 
-        # book 2 returned after 3 days
-        days = 1
         book_checkout_history = BookCheckoutHistory.objects.get(id=2)
         checkout_date = book_checkout_history.check_out_history.check_out_date
         book_checkout_history.date_returned = checkout_date + timedelta(days=days)
+        book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
         book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 1.00)
-        final_charge = book_charge
-        self.assertEqual(final_charge, 1)
+        self.assertEqual(book_charge, 3.00)
 
+        latest_charge = customer_checkout_history.get_latest_charge()
+        self.assertEqual(latest_charge, 6.00)
+
+        # one book returned after 7 days
+        date_returned_object = DateReturnedCost.objects.create(check_out_history=customer_checkout_history)
         days = 7
-        book_checkout_history = BookCheckoutHistory.objects.get(id=2)
-        checkout_date = book_checkout_history.check_out_history.check_out_date
-        book_checkout_history.date_returned = checkout_date + timedelta(days=days)
-        book_checkout_history.save()
-        book_charge = book_checkout_history.book_charge
-        self.assertEqual(book_charge, 7.00)
-        final_charge = book_charge
-        self.assertEqual(final_charge, 7)
-
-
-    def test_print_charges_on_returning(self):  # used for getting charge if book or books were returned on same date
-        # all three books returned after 6 days of borrowing
-        days = 6
-        # book 1
-        book_checkout_history = BookCheckoutHistory.objects.get(id=1)
-        checkout_date = book_checkout_history.check_out_history.check_out_date
-        book_checkout_history.date_returned = checkout_date + timedelta(days=days)
-        book_checkout_history.save()
-        book_1_charge = book_checkout_history.book_charge
-        self.assertEqual(book_1_charge, 6.00)
-
-        # book 2
-        book_checkout_history = BookCheckoutHistory.objects.get(id=2)
-        checkout_date = book_checkout_history.check_out_history.check_out_date
-        book_checkout_history.date_returned = checkout_date + timedelta(days=days)
-        book_checkout_history.save()
-        book_2_charge = book_checkout_history.book_charge
-        self.assertEqual(book_2_charge, 6.00)
-
-        # book 3
         book_checkout_history = BookCheckoutHistory.objects.get(id=3)
         checkout_date = book_checkout_history.check_out_history.check_out_date
         book_checkout_history.date_returned = checkout_date + timedelta(days=days)
+        book_checkout_history.date_return_cost = date_returned_object
         book_checkout_history.save()
-        book_3_charge = book_checkout_history.book_charge
-        self.assertEqual(book_3_charge, 6.00)
+        book_charge = book_checkout_history.book_charge
+        self.assertEqual(book_charge, 7)
 
-        final_charge = book_1_charge + book_2_charge + book_3_charge
-        self.assertEqual(final_charge, 18)
+
